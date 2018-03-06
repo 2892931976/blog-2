@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{category_name}} - {{show_blog_info()["BLOG_TITLE"]}}
+{% end %}
+        
+{% block content %}
+ 
+{% for index, article in enumerate(result['result']) %}
+ 
+<div id="article-entry" class="entry-box">
+    <div class="article-entry-header">
+        <h3 class="article-entry-title">
+            <a href="{{ reverse_url('article', article.uuid) }}">{{ article.title }}</a>
+        </h3>
+    </div>
+    <div class="article-entry-info">
+        <div class="base-info">
+            <span style="background-color:#777;" class="badge">{{result['page_num']*(result['c_page']-1)+1+index}}</span>&nbsp;
+            <span class="label label-default"> {{ article.create_time }} </span>&nbsp;
+            <span class="label label-info">
+
+            {% if handler.PY3 %}
+                <a style="color: white" href="{{ reverse_url("index")+ "?" + handler.urllib.parse.urlencode(dict(category_id=article.category_id)) }}"> {{ article.category.name if article.category_id else "未分类" }} </a>
+            {% else %}
+                <a style="color: white" href="{{ reverse_url("index")+ "?" + handler.urllib.urlencode(dict(category_id=article.category_id)) }}"> {{ article.category.name if article.category_id else "未分类" }} </a>
+            {% end %}
+
+        </div>
+        <div class="main-info">
+            <span class="label label-warning">浏览 {{article.article_view.num_of_view if article.article_view else 1}}</span>
+            <span class="label label-success">评论 {{article.comments.count()}}</span>
+        </div>
+    </div>
+    <div class="article-entry-sum">
+        <p>{{ article.summary[:100] }}{% if len(article.summary) >= 80 %}...... {%end%}</p>
+    </div>
+</div>
+
+{% end %}
+
+{% module Template("page.html", result=result, url="index_list" , category_id=category_id , keyword=keyword ) %}
+
+ 
+{% end %}

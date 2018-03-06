@@ -1,0 +1,52 @@
+<ul class="comments">
+    {% if article and article.comments.count() %}
+        {% for comment in article.comments %}
+            <li class="comment">
+                {% if comment.comment_type == "reply" %}
+                    <p class="comment-reply-info">
+                        <span class="glyphicon glyphicon-envelope"></span>
+                        回复给<strong><i>{{ comment.reply_to_floor }}：</i></strong>
+                    </p>
+                {% end %}
+                <div class="comment-thumbnail">
+                    <img class="img-rounded profile-thumbnail" style="width:30px;hight:30px;" src="{{ static_url('favicon.ico') }}">
+                    <strong class="comment-floor">{{comment.floor}}楼</strong>
+                </div>
+                <div class="comment-info">
+                    <div class="comment-date"><span>{{ comment.create_time  }}</span></div>
+                    <div class="comment-author">
+                        <span>昵称：{{ comment.author_name }}</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>IP地址：( {{ mask_ipaddr(comment.ipaddr) }})</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        {% if comment.rank == "admin" %}
+                            <span class="glyphicon glyphicon-user">管理员</span>
+                        {% end %}
+                    </div>
+                    <div class="comment-content">
+                        {% if not comment.disabled or current_user %}
+                        <p>{{ comment.content }}</p>
+                        {% end %}
+                        {% if comment.disabled and current_user %}
+                        <p class="disabled-comment-admin-info">
+                            <span class="glyphicon glyphicon-remove-sign"></span>
+                            <i>该评论已经被管理员屏蔽！访客无法查看和回复此评论内容。</i>
+                        </p>
+                        {% elif comment.disabled %}
+                        <p class="disabled-comment-admin-info">
+                            <span class="glyphicon glyphicon-remove-sign"></span>
+                            <i>该评论已经被管理员屏蔽！</i>
+                        </p>
+                        {% end %}
+                    </div>
+                </div>
+     
+            </li>
+        {% end %}
+    {% else %}
+        <li class="comment">
+            <div class="comment-content">暂无评论</div>
+        </li>
+    {% end %}
+</ul>
+ 

@@ -1,0 +1,189 @@
+{% extends 'cms_base.html' %}
+
+{% block title %}
+    {{ "编辑文章" if title else "发表文章" }} - {{show_blog_info()["BLOG_TITLE"]}}
+{% end %}
+
+{% block private_stylesheet %}
+    <!--<link rel="stylesheet" type="text/css" media="screen" href="{{ static_url('css/bootstrap-markdown.min.css')}}">-->
+    <!--<link rel="stylesheet" href="{{ static_url('css/highlight/default.min.css') }}" />-->
+    
+    <!--<link rel="stylesheet" type="text/css" href="{{ static_url('simditor-2.3.5/styles/simditor.css')}}" />-->
+    
+    <link rel="stylesheet" type="text/css" href="{{ static_url('wangEditor/css/wangEditor.min.css')}}" />
+    <!-- <link href="https://cdn.bootcss.com/wangEditor/2.1.23/wangEditor.min.css" rel="stylesheet"> -->
+    
+{% end %}
+
+{% block admin_content %}
+<div class="entry-box submit-article">
+    <h4><strong>{{entry_title}}</strong></h4>
+    <hr/>
+    <form id="form" method="post" action="">
+        {% module xsrf_form_html() %}
+        <div class="form-group">
+            <label class="control-label" for="title">标题</label>：
+            <input class="submit-article-title" id="title" name="title" required="" type="text"
+                   value="{% if title %} {{title}} {%end%}">
+                   
+            <label class="control-label" for="types">文章分类</label>：
+            <select id="types" name="category_id">
+                {% for category in categories %}
+                <option value="{{category.uuid}}"  {% if category_id==category.uuid %} selected {%end%}  >{{category.name}}</option>
+                {% end %}
+            </select>
+        </div>
+ 
+        <div class="form-group">
+            <textarea id="editor" style="height:350px;" placeholder="" name="content" autofocus>{% if content %}{% raw content %}{%end%}</textarea>
+        </div>
+ 
+        <div class="form-group">
+            <label class="control-label" for="summary">文章摘要</label><br>
+            <textarea class="form-control" id="summary" name="summary" >{% if summary %} {{ summary  }}{%end%}</textarea>
+        </div>
+        
+        <p style="display:none;" name="article_id" id="article_id" >{% if article_id %}{{ article_id  }}{%end%}</p>
+        
+        <div class="submit-article-button">
+            <label class="button pull-left">
+                <span  id="file_uplpad_button" class="btn btn-warning">上传</span>
+                <span style="display:none;"  style="color:grey">最后一张图片上传之后，必须在图片后面按一下回车键。</span>
+                <input type="file" accept="image/*,video/*" multiple="multiple" style="display: none" onchange="upload_image_function(this.files)">
+            </label>
+ 
+            <button type="button" class="btn" onclick="javascript:history.back(-1);" >返回</button>
+            <button type="submit" class="btn btn-success"  >提交</button>
+        </div>
+    </form>
+</div>
+{% end %}
+
+{% block private_script %}
+    <!--<script src="{{ static_url('js/markdown/markdown.js') }}"></script>-->
+    <!--<script src="{{ static_url('js/highlight/highlight.min.js') }}"></script>-->
+    <!--<script src="{{ static_url('js/markdown/to-markdown.js')}}"></script>-->
+    <!--<script src="{{ static_url('js/markdown/bootstrap-markdown.js')}}"></script>-->
+    <!--<script src="{{ static_url('js/markdown/locale/bootstrap-markdown.zh.js')}}"></script>-->
+    <!--<script src="{{ static_url('js/markdownEdit.js')}}"></script>-->
+    
+    <!--<script type="text/javascript" src="{{ static_url('simditor-2.3.5/scripts/module.min.js')}}"></script>-->
+    <!--<script type="text/javascript" src="{{ static_url('simditor-2.3.5/scripts/hotkeys.min.js')}}"></script>-->
+    <!--<script type="text/javascript" src="{{ static_url('simditor-2.3.5/scripts/uploader.min.js')}}"></script>-->
+    <!--<script type="text/javascript" src="{{ static_url('simditor-2.3.5/scripts/simditor.min.js')}}"></script>-->
+    
+    <script type="text/javascript" src="{{ static_url('wangEditor/js/wangEditor.min.js')}}"></script>
+    <!-- <script src="https://cdn.bootcss.com/wangEditor/2.1.23/wangEditor.min.js"></script> -->
+    <script>
+        //var editor = new Simditor({
+        //    textarea: $('#editor')
+        //});        
+        
+        //https://www.kancloud.cn/wangfupeng/wangeditor2/113966
+        
+        var editor = new wangEditor('editor');
+        editor.create();
+        window.editor = editor;
+     
+    </script>
+    
+    <script>
+        //获取cookie
+        function get_cookie(name) {
+            var xsrf_cookies = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+            return xsrf_cookies[1]
+        }
+        
+ 
+        $("#form").submit(function(){
+            event.preventDefault(); //不写的话， 会提交两次
+            
+            content = window.editor.$txt.html()
+            summary = $("#summary").val()
+            article_id = $("#article_id").text()
+            title = $(".submit-article-title").val()
+            category_id = $("#types").val()
+            
+            if (article_id){
+                url = "/cms/article/"+ article_id +"/update/"
+            } else {
+                url = "/cms/article/submit/"
+            }
+            
+            $.ajax({
+                'headers':{
+                    "X-XSRFTOKEN":get_cookie("_xsrf")
+                },
+                'url': url,
+                'type': 'post',
+                'data':  { 'content':content,
+                            'summary':summary,
+                            'article_id':article_id,
+                            'title':title,
+                            'category_id':category_id,
+                            } ,
+                'success':function (XMLHttpRequest, textStatus){
+                    window.location.href="/article/" + XMLHttpRequest + "/"
+                },
+            })
+        });
+  
+        function upload_image_function(files) {
+        
+            var form = new FormData();
+            
+            for ( i=0 ; i < files.length; i++ ) {
+                var fileobj = files[i];
+                form.append('file',fileobj);
+            }
+         
+            $("#file_uplpad_button").text("上传中");
+            $("#file_uplpad_button").attr("disabled","disabled");
+
+            $.ajax({
+                type:'POST',
+                url:'/upload/',
+                data:form,
+                async: true,  
+                cache: false,  
+                processData:false,  // 告诉jquery不转换数据
+                contentType:false,  // 告诉jquery不设置内容格式
+                success:function (arg) {
+                    $("#file_uplpad_button").text("上传");
+                    $("#file_uplpad_button").removeAttr("disabled");
+                    
+                    for (i in arg.data)
+                    {
+                        fileUrl = arg.data[i].url;
+                        filename = arg.data[i].filename;
+                        content_type = arg.data[i].content_type;
+                        
+                        if (content_type=="video"){
+                            var tag = "<p align='center' ><video style='max-width:800px;max-height:600px;' controls><source src="+fileUrl+"></video></p>";
+                        }
+                        else if (content_type=="image"){
+                            var tag = "<p align='center' ><img style='max-width:800px' src="+fileUrl+"></p>";
+                        }
+                        else{
+                            var tag = "<p align='center' ><a href="+fileUrl+"><span class='glyphicon glyphicon-save'>" + filename + "</span></a>";
+                        }
+                        
+                        window.editor.$txt.append(tag);
+                        
+                        var tag = "<p><br></p>"
+                        window.editor.$txt.append(tag);
+                    }
+                },     
+                error: function (returndata) {  
+                    $("#file_uplpad_button").text("上传失败啦！");
+                    $("#file_uplpad_button").removeAttr("disabled");
+                }  
+                
+            })
+
+
+        }
+ 
+    </script>
+
+{% end %}

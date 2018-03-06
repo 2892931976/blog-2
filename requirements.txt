@@ -1,0 +1,9 @@
+PyMySQL==0.8.0 
+requests==2.18.4 
+SQLAlchemy==1.1.15 
+tornado==4.5.3
+redis==2.10.6
+pycket==0.3.0
+Pillow==4.3.0
+pbkdf2==1.3
+qrcode==5.3

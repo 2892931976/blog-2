@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+ 
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+            {{show_blog_info()["BLOG_TITLE"]}}
+        {% end %}
+    </title>
+    {% block stylesheet %}
+        <link href="{{ static_url('css/bootstrap.css') }}" rel="stylesheet">
+        <!-- <link href="https://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet"> -->
+        
+        <link href="{{ static_url('css/common.css') }}" rel="stylesheet">        
+        <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400' rel='stylesheet' type='text/css'>        
+        <link rel="shortcut icon" href="{{ static_url("favicon.ico") }}">
+        <style>
+            a{text-decoration:none}
+        </style>
+        
+        {% block private_stylesheet %}
+        {% end %}
+    {% end %}
+</head>
+<body>
+<header>
+    <div class='header-top'>
+        <div class="container">
+            <h2  class="blog-title"><a href="/">{{show_blog_info()["BLOG_TITLE"]}}</a></h2>
+            <p class="lead signature">
+                &nbsp;&nbsp;&nbsp;&nbsp; 
+                &nbsp;&nbsp;&nbsp;&nbsp; 
+                {{show_blog_info()["BLOG_SMALL_TITLE"]}}
+                <small class="pull-right" style="color:#337ab7;">
+                    {{show_blog_info()["BLOG_INFO"]}}
+                </small>
+            </p>
+        </div>
+    </div>
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">切换导航</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class=""><a href="/"><span class="glyphicon glyphicon-home"> 首页</span></a></li>
+                    {% for menu in get_menus() %}
+                        {% if menu.categories %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">
+                                    {{ menu.name }}
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    {% for category in menu.categories %}
+                                        {% if not category.hidden or current_user %}
+                                            <li align="center">
+                                                {% if handler.PY3 %}
+                                                    <a href="{{ reverse_url("index")+ "?" + handler.urllib.parse.urlencode(dict(category_id=category.uuid)) }}"> {{ category.name }} </a>
+                                                {% else %}
+                                                    <a href="{{ reverse_url("index")+ "?" + handler.urllib.urlencode(dict(category_id=category.uuid)) }}"> {{ category.name }} </a>
+                                                {% end %}
+                                            </li>
+                                            <li class="divider"></li>
+                                        {% end %}
+                                    {% end %}
+                                </ul>
+                            </li>
+                        {% end %}
+                    {% end %}
+                    {% for category in get_category_not_under_menu() %}
+                        {% if not category.hidden or current_user %}
+                            <li>
+                                {% if handler.PY3 %}
+                                    <a href="{{ reverse_url("index")+ "?" + handler.urllib.parse.urlencode(dict(category_id=category.uuid)) }}"> {{ category.name }} </a>
+                                {% else %}
+                                    <a href="{{ reverse_url("index")+ "?" + handler.urllib.urlencode(dict(category_id=category.uuid)) }}"> {{ category.name }} </a>
+                                {% end %}
+                            </li>
+                        {% end %}
+                    {% end %}
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown">
+                                <img style="height:30px;width:30px;" src="{{ static_url('avatar.jpg') }}">
+                                {{ current_user }} <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li align="center"><a href="{{ reverse_url('article_submit') }}">发表文章</a></li>
+                                <li class="divider"></li>
+                                <li align="center"><a href="javascript:void(0)" onclick="changePassword()" >修改密码</a></li>
+                                <li class="divider"></li>
+                                <li align="center"><a href="javascript:void(0)" onclick="createcategory()" >创建分类</a></li>
+                                <li class="divider"></li>
+                                <li align="center"><a href="javascript:void(0)" onclick="createmenu()" >创建菜单</a></li>
+                                <li class="divider"></li>
+                                <li align="center"><a href="{{ reverse_url('logout') }}">退出登陆</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <label style="padding-top:8px;" class="button">
+                            <a href="{{ reverse_url('login') }}" > 
+                                <span class="btn btn-default">登录</span>
+                            </a>
+                        </label>
+                    {% end %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+{% block main %}
+    <div class="content">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-9 article">
+                    {% block content %}
+                    {% end %}
+                </div>
+                <div class="col-md-3 blog_nav">
+                    {% include blog_nav.html %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% end %}
+ 
+<div class="footer">
+    <p class="footer-content">
+        Copyright © {{show_blog_info()["BLOG_COPYRIGHT"]}} | 
+        <a href="http://www.miitbeian.gov.cn/publish/query/indexFirst.action" rel="nofollow" target="_blank">{{show_blog_info()["BLOG_ICP"]}}</a>
+    </p>
+</div>
+
+<div class="btn-group-vertical floatButton">
+    <button id="goTop" class="btn btn-default" title="去顶部" type="button">
+        <span class="glyphicon glyphicon-arrow-up"></span>
+    </button>
+    <button id="refresh" class="btn btn-default" title="刷新" type="button">
+        <span class="glyphicon glyphicon-refresh"></span>
+    </button>
+    <button id="goBottom" class="btn btn-default" title="去底部" type="button">
+        <span class="glyphicon glyphicon-arrow-down"></span>
+    </button>
+</div>
+
+{% block base_script %}
+    <!-- <script src="{{ static_url('js/jquery-2.2.1.min.js') }}"></script> -->
+    <!-- <script src="https://cdn.bootcss.com/jquery/2.2.1/jquery.js"></script> -->
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    
+    <!-- <script src="{{ static_url('js/bootstrap.min.js') }}"></script> -->
+    <!-- <script src="https://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script> -->
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    <script src="//cdn.bootcss.com/bootstrap-hover-dropdown/2.2.1/bootstrap-hover-dropdown.min.js"></script>
+    <script src="{{ static_url('js/floatButton.js') }}"></script>
+    <script src="{{ static_url('js/base.js') }}"></script>
+    <script src="{{ static_url('params/xtparam.js') }}"></script>
+{% end %}
+
+{% block script %}
+{% end %}
+
+
+<!-- 信息确认: For change password form-->
+<div class="modal fade" id="changePasswordFormModal">
+    <div class="modal-dialog">
+        <div class="modal-content message_align">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="NavModalTitle"></h4>
+            </div>
+            <form id="changePasswordForm" method="post" onsubmit="return checkChangePasswordForm()"
+                  action="{{ reverse_url('change_password') }}">
+                {% module xsrf_form_html() %}
+                <div class="modal-body">
+                        <div class="form-group">
+                            <label for="old_password">原密码</label>
+                            <input class="form-control" id="old_password" required name="old_password" type="password" >
+                            <label for="password">新密码</label>
+                            <input class="form-control" id="password" required name="password" type="password" >
+                        </div>
+                        <div id="group_password2" class="form-group">
+                            <label for="password2">新密码确认</label>
+                            <input class="form-control" id="password2" required name="password2" type="password" >
+                            <span id="password2_err" class="help-block" style="display: none">两次密码不一致</span>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="changePasswordCfmClick" type="submit" class="btn btn-success">确定</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div class="modal fade" id="createCategoryFormModal">
+    <div class="modal-dialog">
+        <div class="modal-content message_align">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="NavModalTitle"></h4>
+            </div>
+            <form id="createCategoryForm" method="post" action="{{ reverse_url('create_category') }}">
+                {% module xsrf_form_html() %}
+                <div class="modal-body">
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">创建文章分类：</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" required="" name="category_name">
+                                     
+                                </input>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">选择菜单：</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="menu_id">
+                                    <option value=""    ></option>
+                                    {% for menu in get_menus() %}
+                                        <option value="{{menu.uuid}}"  >{{ menu.name }}</option>
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">确定</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="createMenuFormModal">
+    <div class="modal-dialog">
+        <div class="modal-content message_align">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="NavModalTitle"></h4>
+            </div>
+            <form id="createCategoryForm" method="post" action="{{ reverse_url('create_menu') }}">
+                {% module xsrf_form_html() %}
+                <div class="modal-body">
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">创建菜单：</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" required="" name="menu_name"></input>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">确定</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</body>
+</html>

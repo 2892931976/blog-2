@@ -1,0 +1,160 @@
+{% extends 'detail_base.html' %}
+
+{% block title %}
+    {{ article.title }} - {{show_blog_info()["BLOG_TITLE"]}}
+{% end %}
+
+{% block private_stylesheet %}
+    <link rel="stylesheet" href="{{ static_url('css/highlight/default.min.css') }}" /> 
+{% end %}
+
+{% block content %}
+<div id='article-detials' class="entry-box">
+    <div class="article-entry-header">
+        <h3 class="article-entry-title">
+            <a href="{{ reverse_url('article', article.uuid) }}">{{ article.title }}</a>
+        </h3>
+    </div>
+    <div class="article-entry-info">
+        <div class="base-info">
+            <span class="label label-default"> {{ article.create_time }} </span>&nbsp;&nbsp;
+            
+            <span class="label label-info">
+            {% if handler.PY3 %}
+                <a style="color: white" href="{{ reverse_url("index")+ "?" + handler.urllib.parse.urlencode(dict(category_id=article.category_id)) }}"> {{ article.category.name if article.category_id else "未分类" }} </a>
+            {% else %}
+                <a style="color: white" href="{{ reverse_url("index")+ "?" + handler.urllib.urlencode(dict(category_id=article.category_id)) }}"> {{ article.category.name if article.category_id else "未分类" }} </a>
+            {% end %}
+            </span>&nbsp;&nbsp;
+            
+            {% if current_user %}
+                <a style="text-decoration:none" href="javascript:void(0)">
+                    <button onclick="changecategory()" type="button" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        编辑
+                    </button>
+                </a>
+            {% end %}
+
+        </div>
+        <div class="main-info">
+            <span class="label label-warning">浏览 {{article.article_view.num_of_view if article.article_view else 1}}</span>
+            <span class="label label-success">评论 {{article.comments.count()}}</span>
+        </div>
+    </div>
+
+    <hr>
+    <div>
+        <img class="article-loading" src="{{ static_url('images/loading154.gif') }}">
+        <p class="article-content" style="display: none">
+            {% raw article.content %}
+        </p>
+        <br><br>
+ 
+        <hr><br>
+        <p align="center" style="font-size:20px;color:skyblue" >扫码分享文章</p>
+        <p align="center" >
+            <img align="center" style="height:200px;width:200px;" src="{{ reverse_url('qrcode', article.uuid) }}">
+            </img>
+        </p>
+        
+    </div>
+    <br><br>
+    <div class="article-add-info">
+        <p style="color:grey">
+            <span class="glyphicon glyphicon-time">
+                博文最后更新时间：
+            </span>
+            {{ article.update_time }}
+        </p>
+    </div>
+    
+    <div class="article-edit">
+        <a style="text-decoration:none" href="" onclick="javascript:history.back(-1);">
+            <button type="button" class="btn btn-default btn-sm">
+                <span class="glyphicon glyphicon-menu-left"></span>
+                返回
+            </button>
+        </a>
+        {% if current_user %}
+            <a style="text-decoration:none" href="{{ reverse_url('article_update', article.uuid) }}">
+                <button type="button" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                    编辑
+                </button>
+            </a>
+            <a style="text-decoration:none" href="{{ reverse_url('remove_article', article.uuid) }}">
+                <button type="button" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-trash"></span>
+                    删除
+                </button>
+            </a>
+        {% end %}
+    </div>
+    
+    <hr>
+    
+    <h4 id="comments" name="comments"><span class="glyphicon glyphicon-comment">评论</span></h4>
+    {% include "article_comments.html" %}
+    
+    <h4  id="submit-comment"><span class="glyphicon glyphicon-comment">发表评论</span></h4>
+    <div class="row">
+    <div class="col-md-8" id="submit-comment-container">
+        <form class="submit-comment-form" id="submit-comment-form" method="post" action="{{ reverse_url('article_comment', article.uuid)}}">
+            {% module xsrf_form_html() %}
+            <label for="name">昵称</label>
+            <input class="form-control" id="name" name="author_name" required="" type="text"
+                   value="{{ current_user if current_user else '' }}">
+ 
+            <label for="content">内容</label>
+            <textarea class="form-control" id="content" name="content" required=""></textarea>
+            <button type="submit" class="btn btn-default">
+                提交
+            </button>
+        </form>
+    </div>
+    </div>
+    
+</div>
+ 
+<div class="modal fade" id="changeCategoryFormModal">
+    <div class="modal-dialog">
+        <div class="modal-content message_align">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="NavModalTitle"></h4>
+            </div>
+            <form id="changeCategoryForm" method="post" action="{{ reverse_url('change_category', article.uuid) }}">
+                {% module xsrf_form_html() %}
+                <div class="modal-body">
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">修改文章分类：</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="category_id">
+                                    {% for category in categories %}
+                                    <option value="{{category.uuid}}"  {% if category_id==category.uuid %} selected {%end%}  >{{category.name}}</option>
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">确定</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+ 
+{% end %}
+
+{% block script %}
+    <script src="{{ static_url('js/markdown/markdown.js') }}"></script>
+    <script src="{{ static_url('js/highlight/highlight.min.js') }}"></script>
+    <script src="{{ static_url('js/articleDetail.js') }}"></script>
+{% end %}

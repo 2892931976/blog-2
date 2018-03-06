@@ -1,0 +1,80 @@
+{% if show_blog_info()["SHOW_SEARCH"]=="TRUE" %}
+<form id="keyword_form" method="post" action="">
+    <div class="entry-box">
+        <h5><strong>文章搜索</strong></h5>
+        <div class="input-group">
+          <input id="keyword" name="keyword" type="text" class="form-control" required="" placeholder="搜索 标题/内容/摘要">
+          <span class="input-group-btn">
+            <button id="search_btn" class="btn btn-default" type="submit">搜索</button>
+          </span>
+        </div><!-- /input-group -->
+    </div>
+</form>
+{% end %}
+{% if show_blog_info()["SHOW_COLLECTION"]=="TRUE" %}
+<div class="entry-box">
+    <h5><strong>博客统计</strong></h5>
+    <p>
+        今日访问量(PV)：<span class="badge">{{show_pv_uv().pv}}</span>
+    </p>
+    <p>
+        今日访客(UV)：<span class="badge">{{show_pv_uv().uv}}</span>
+    </p>
+    
+    <p>
+        今日文章总数：<span class="badge">{{show_today_articles_comments()['articles'] }}</span>
+    </p>
+    <p>
+        今日评论总数：<span class="badge">{{show_today_articles_comments()['comments'] }}</span>
+    </p>
+    
+    <p>
+        文章总数：<span class="badge">{{show_articles_comments()['articles'] }}</span>
+    </p>
+    <p>
+        评论总数：<span class="badge">{{show_articles_comments()['comments'] }}</span>
+    </p>
+</div>
+{% end %}
+{% if show_blog_info()["SHOW_OPENSOURCE"]=="TRUE" %}
+    <div class="entry-box">
+        <h5><strong>开源</strong></h5>
+        <p>
+            项目：
+            <a href="https://gitee.com/krman/blog.git">gitee.com/krman/blog.git</a>
+        </p>
+    </div>
+{% end %}
+{% if show_blog_info()["SHOW_WELCOME"]=="TRUE" %}
+    <div class="entry-box">
+        <h5><strong>欢迎光临</strong></h5>
+        <p>非常欢迎您光临我的个人博客，如果您对我的博客有意见或者建议可以在文章下面留言、发邮件！</p>
+        <p>
+            邮箱：wang#haiqing.wang
+        </p>
+        <p>
+            博客：
+            <a href="http://blog.wanghaiqing.com">blog.wanghaiqing.com</a>
+        </p>
+        <p>
+            博客：
+            <a href="http://blog.haiqing.wang">blog.haiqing.wang</a>
+        </p>
+        <p style="display:none;" >欢迎添加好友</p>
+        <p style="text-align:center;display:none;">
+            <!-- <img src="{{ static_url('wechat.png') }}" alt="wechat" width="150" height="150"> -->
+            <!-- <img src="{{ static_url('qq.png') }}"  alt="qq" width="150" height="150"> -->
+        </p>
+    </div>
+{% end %}
+
+{% if show_blog_info()["SHOW_GROUP"]=="TRUE" %}
+    <div class="entry-box">
+        <h5><strong>Python Web群：673256365</strong></h5><br>
+        <p style="text-align:center">
+            <a  target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=919444b4e9e36c533deb6a29a76fb85ebc777d1fb9f310a9b7b68a539179accf">
+                <img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="Python Web" title="Python Web">
+            </a> 
+        </p>
+    </div>
+{% end %}

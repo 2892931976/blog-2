@@ -1,0 +1,68 @@
+<div align="center" class="page-nav">
+    <nav aria-label="...">
+        <ul class="pagination">
+            {% if keyword %}
+                {% if category_id %}
+                    {% if handler.PY3 %}
+                        {% set param="?" + handler.urllib.parse.urlencode(dict(category_id=category_id, keyword=keyword)) %}                
+                    {% else %}
+                        {% set param="?" + handler.urllib.urlencode(dict(category_id=category_id, keyword=keyword)) %}                
+                    {% end %}
+                {% else %}
+                    {% if handler.PY3 %}
+                        {% set param="?" + handler.urllib.parse.urlencode(dict(keyword=keyword)) %}                
+                    {% else %}
+                        {% set param="?" + handler.urllib.urlencode(dict(keyword=keyword)) %}                
+                    {% end %}    
+                {% end %}
+            {% else %}    
+                {% if category_id %}
+                    {% if handler.PY3 %}
+                        {% set param="?" + handler.urllib.parse.urlencode(dict(category_id=category_id, keyword=keyword)) %}                
+                    {% else %}
+                        {% set param="?" + handler.urllib.urlencode(dict(category_id=category_id, keyword=keyword)) %}                
+                    {% end %}
+                {% else %}
+                        {% set param="" %}      
+                {% end %}
+            {% end %}
+                            
+            {% if result['c_page'] <= 1 %}
+                <li class="disabled"><span>首页</span></li>
+            {% else %}
+                <li><a href="{{ reverse_url(url, 1)+param }}">首页</a></li>
+            {% end %}
+            
+            {% if result['c_page'] <= 1 %}
+                <li class="disabled"><span>上一页</span></li>
+            {% else %}
+                <li><a href="{{ reverse_url(url,result['c_page']-1)+param }}">上一页</a></li>
+            {% end %}
+
+
+            {% for page in result['pages'] %}
+                {% if result['c_page'] == page %}
+                    <li class="active" ><a style="cursor:pointer" href="{{ reverse_url(url,page)+param }}">{{ page }}</a></li>
+                {% else %}
+                    <li><a href="{{ reverse_url(url,page)+param }}">{{ page }}</a></li>
+                {% end %}
+            {% end %}
+            
+            
+            {% if result['c_page'] >= result['t_page'] %}
+                <li class="disabled"><span>下一页</span></li>
+            {% else %}
+                <li><a href="{{ reverse_url(url,result['c_page']+1)+param }}">下一页</a></li>
+            {% end %}
+            
+            {% if result['c_page'] >= result['t_page'] %}
+                <li class="disabled"><span>尾页</span></li>
+            {% else %}
+                <li><a href="{{ reverse_url(url,result['t_page'])+param }}">尾页</a></li>
+            {% end %}
+            
+            <li class="disabled"><span>共 {{ result['t_page'] }} 页</span></li>
+            
+        </ul>
+    </nav>
+</div> 
